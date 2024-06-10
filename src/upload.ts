@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import shortUUID from 'short-uuid';
 import { Handler } from './index';
-import { formatDigit, isIDUsable } from './utils';
+import { formatDate, formatDigit, isIDUsable } from './utils';
 
 const DEFAULT_TTL = 3600 * 24 * 7; // One week.
 
@@ -63,9 +63,7 @@ export const handleUpload: Handler = async ({ env, req }): Promise<Response> => 
 		msg += `[Expires at] never\n`;
 	else {
 		const date = new Date(expireAt * 1000);
-		let dateStr = `${date.getUTCFullYear()}-${formatDigit(date.getUTCMonth() + 1)}-${formatDigit(date.getUTCDate())}`;
-		dateStr += ` ${formatDigit(date.getUTCHours())}:${formatDigit(date.getUTCMinutes())}:${formatDigit(date.getUTCSeconds())}`;
-		msg += `[Expires at] ${dateStr} (UTC)\n`;
+		msg += `[Expires at] ${formatDate(date)} (UTC)\n`;
 	}
 	console.log(`File [${id}] stored as [${uuid}]`);
 	return new Response(msg);

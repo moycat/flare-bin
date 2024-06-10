@@ -21,6 +21,7 @@ export async function isIDUsable(id: string, kv_namespace: KVNamespace): Promise
 		return false;
 	}
 	const existing = await kv_namespace.get(id);
+	// TODO: delete if expired.
 	return !existing;
 }
 
@@ -28,3 +29,6 @@ export const formatDigit = (x, digit: number = 2) => x.toLocaleString('en-US', {
 	minimumIntegerDigits: digit,
 	useGrouping: false
 });
+
+export const formatDate = date => `${date.getUTCFullYear()}-${formatDigit(date.getUTCMonth() + 1)}-${formatDigit(date.getUTCDate())}` +
+	` ${formatDigit(date.getUTCHours())}:${formatDigit(date.getUTCMinutes())}:${formatDigit(date.getUTCSeconds())}`;

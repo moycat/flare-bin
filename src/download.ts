@@ -4,27 +4,26 @@ import { clean } from './clean';
 export const handleDownload: Handler = async ({ env, req }): Promise<Response> => {
 	const fileID = req.params.fileID;
 	console.log(`downloading file [${fileID}]`);
-	const metadata = await env.KV_NAMESPACE.get<FileData>(fileID, { type: 'json' });
+	const fileData = await env.KV_NAMESPACE.get<FileData>(fileID, { type: 'json' });
 	const now = Math.floor(Date.now() / 1000);
-	if (metadata && metadata.expireAt <= now) {
+	if (fileData && fileData.expireAt <= now) {
 		await clean(env, fileID);
 		return new Response('File does not exist or has expired.', {
 			status: 404
 		});
 	}
-	if (!metadata) {
+	if (!fileData) {
 		return new Response('File does not exist or has expired.', {
 			status: 404
 		});
 	}
 	// Check the token.
-	if (metadata.token)
-		if (req.query['token'] !== metadata.token)
-			return new Response('File requires the correct token.', {
-				status: 403
-			});
+	if (fileData.token && req.query['token'] !== fileData.token)
+		return new Response('File requires the correct token.', {
+			status: 403
+		});
 	// Get the file.
-	const file = await env.BUCKET.get(metadata.uuid, {
+	const file = await env.BUCKET.get(fileData.uuid, {
 		range: req.headers,
 		onlyIf: req.headers
 	});
@@ -35,8 +34,8 @@ export const handleDownload: Handler = async ({ env, req }): Promise<Response> =
 	}
 	// Stream the file.
 	const headers = new Headers();
-	headers.set('Content-Type', metadata.contentType);
-	headers.set('Content-Disposition', `filename="${metadata.filename.replaceAll('"', '\\"')}"`);
+	headers.set('Content-Type', fileData.contentType);
+	headers.set('Content-Disposition', `filename="${fileData.filename.replaceAll('"', '\\"')}"`);
 	headers.set('Etag', file.httpEtag);
 	if (file.range) {
 		headers.set('Content-Range', `bytes ${file.range.offset}-${file.range.end ?? file.size - 1}/${file.size}`);
