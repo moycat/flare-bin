@@ -10,7 +10,7 @@ const uuidGenerator = shortUUID(shortUUID.constants.flickrBase58, {
 });
 
 async function ensureIDUsable(id: string, kvNamespace: KVNamespace, bucket: R2Bucket): Promise<boolean> {
-	if (id == 'files' || id === 'clean') {
+	if (id == 'files' || id === 'clean' || id === 'list') {
 		// Reserved IDs.
 		return false;
 	}
@@ -72,14 +72,19 @@ export const handleUpload: Handler = async ({ env, req }): Promise<Response> => 
 
 	// Do upload.
 	await env.KV_NAMESPACE.put(id, JSON.stringify(fileData), {
-		metadata: { expireAt: expireAt }
+		metadata: {
+			expireAt: expireAt,
+			token: token,
+			size: file.size,
+			filename: filename
+		}
 	});
 	await env.BUCKET.put(uuid, file);
 	// Generate the message.
 	let msg = 'Upload successful!\n\n';
-	msg += `[URL] https://${req.headers.get('Host')}/${id}`;
+	msg += `[URL] https://${req.headers.get('Host')}/${encodeURIComponent(id)}`;
 	if (token)
-		msg += '?token=' + encodeURI(token);
+		msg += '?token=' + encodeURIComponent(token);
 	msg += '\n';
 	msg += `[Filename] ${filename}\n`;
 	msg += `[Size] ${file.size}\n`;
