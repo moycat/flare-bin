@@ -22,5 +22,6 @@ export const formatDigit = (x, digit: number = 2) => x.toLocaleString('en-US', {
 	useGrouping: false
 });
 
-export const formatDate = date => `${date.getUTCFullYear()}-${formatDigit(date.getUTCMonth() + 1)}-${formatDigit(date.getUTCDate())}` +
+export const formatDate = date =>
+	`${date.getUTCFullYear()}-${formatDigit(date.getUTCMonth() + 1)}-${formatDigit(date.getUTCDate())}` +
 	` ${formatDigit(date.getUTCHours())}:${formatDigit(date.getUTCMinutes())}:${formatDigit(date.getUTCSeconds())}`;

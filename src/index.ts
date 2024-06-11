@@ -13,7 +13,7 @@ router.get('/list', requirePassword, handleList);
 
 router.post('/', requirePassword, handleUpload);
 router.get('/:fileID', normalizeFileID, checkFileValidity, handleDownload);
-router.delete('/:fileID', normalizeFileID, requirePassword, checkFileValidity, handleDelete);
+router.delete('/:fileID', requirePassword, normalizeFileID, checkFileValidity, handleDelete);
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

@@ -41,7 +41,7 @@ export const checkFileValidity: Handler = async ({ env, req }) => {
 	return;
 };
 
-export const normalizeFileID: Handler = async ({req}) => {
+export const normalizeFileID: Handler = async ({ req }) => {
 	if (req.params.fileID)
-		req.params.fileID = decodeURIComponent(req.params.fileID)
-}
+		req.params.fileID = decodeURIComponent(req.params.fileID);
+};
