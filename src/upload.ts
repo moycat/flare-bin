@@ -52,7 +52,7 @@ export const handleUpload: Handler = async ({ env, req }): Promise<Response> => 
 	const uuid = uuidGenerator.uuid();
 	const id: string = query['id'] ? query['id'] : uuidGenerator.fromUUID(uuid).slice(0, 6);
 	const ttl: number = +query['ttl'] >= 0 ? +query['ttl'] : DEFAULT_TTL;
-	const expireAt: number = currentTimestamp() + ttl;
+	const expireAt: number = ttl > 0 ? currentTimestamp() + ttl : 0;
 	const token: string = query['token'] ?? '';
 	const filename = query['filename'] ? query['filename'] : file.name;
 	const contentType = file.type;

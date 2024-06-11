@@ -32,7 +32,7 @@ export const checkFileValidity: Handler = async ({ env, req }) => {
 	const now = currentTimestamp();
 	const fileID = req.params.fileID;
 	const fileData = await env.KV_NAMESPACE.get<FileData>(fileID, { type: 'json' });
-	if (fileData && fileData.expireAt <= now) {
+	if (fileData && fileData.expireAt > 0 && fileData.expireAt <= now) {
 		await clean(fileID, env.KV_NAMESPACE, env.BUCKET);
 		return new Response('File does not exist or has expired.', {
 			status: 404

@@ -24,7 +24,7 @@ export async function cronCleanExpiredFiles(env: Env) {
 			cursor: cursor
 		});
 		for (const key of keyList.keys) {
-			if (now > key.metadata.expireAt) {
+			if (key.metadata.expireAt > 0 && now > key.metadata.expireAt) {
 				console.log(`[${key.name}] has expired at [${key.metadata.expireAt}]`);
 				try {
 					await clean(key.name, env.KV_NAMESPACE, env.BUCKET);
