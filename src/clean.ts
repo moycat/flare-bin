@@ -1,22 +1,21 @@
 import { Handler } from './index';
 
-export async function clean(env: Env, id: string) {
+export async function clean(id: string, kvNamespace: KVNamespace, bucket: R2Bucket) {
 	console.log(`deleting file [${id}]`);
-	const data = await env.KV_NAMESPACE.get(id);
-	if (!data) {
+	const fileData = await kvNamespace.get<FileData>(id, { type: 'json' });
+	if (!fileData) {
 		throw new Error('file id not found');
 	}
-	const fileData = JSON.parse(data);
 	const uuid = fileData['uuid'];
 	try {
-		await env.BUCKET.delete(uuid);
+		await bucket.delete(uuid);
 	} catch (e) {
 		console.log('failed to delete object in bucket:', e);
 	}
-	return env.KV_NAMESPACE.delete(id);
+	return kvNamespace.delete(id);
 }
 
-export async function cleanExpiredFiles(env: Env) {
+export async function cronCleanExpiredFiles(env: Env) {
 	console.log('Cleaning expired files...');
 	const now = (new Date()).getTime() / 1000;
 	let cursor = '';
@@ -28,7 +27,7 @@ export async function cleanExpiredFiles(env: Env) {
 			if (now > key.metadata.expireAt) {
 				console.log(`[${key.name}] has expired at [${key.metadata.expireAt}]`);
 				try {
-					await clean(env, key.name);
+					await clean(key.name, env.KV_NAMESPACE, env.BUCKET);
 				} catch (e) {
 					console.log(`failed to delete file [${key.name}]:`, e);
 				}
@@ -43,19 +42,19 @@ export async function cleanExpiredFiles(env: Env) {
 }
 
 export const handleClean: Handler = async ({ env }): Promise<Response> => {
-	return cleanExpiredFiles(env);
+	return cronCleanExpiredFiles(env);
 };
 
 export const handleDelete: Handler = async ({ env, req }): Promise<Response> => {
 	const fileID = req.params.fileID;
-	const data = await env.KV_NAMESPACE.get(fileID);
-	if (!data) {
+	const fileData = await env.KV_NAMESPACE.get<FileData>(fileID, { type: 'json' });
+	if (!fileData) {
 		return new Response('File does not exist or has expired.', {
 			status: 404
 		});
 	}
 	try {
-		await clean(env, fileID);
+		await clean(fileID, env.KV_NAMESPACE, env.BUCKET);
 	} catch (e) {
 		console.log(`failed to delete file [${fileID}]:`, e);
 		return new Response(`Failed to delete file [${fileID}]: ${e.toString()}`, {

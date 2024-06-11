@@ -1,15 +1,15 @@
 import { Router, RouterHandler } from '@tsndr/cloudflare-worker-router';
 import { handleDownload } from './download';
 import { handleUpload } from './upload';
-import { requirePassword } from './middleware';
-import { cleanExpiredFiles, handleClean, handleDelete } from './clean';
+import { checkFileValidity, requirePassword } from './middleware';
+import { cronCleanExpiredFiles, handleClean, handleDelete } from './clean';
 
 export type Handler = RouterHandler<Env>
 const router = new Router<Env>();
 
 router.post('/', requirePassword, handleUpload);
-router.get('/:fileID', handleDownload);
-router.delete('/:fileID', requirePassword, handleDelete);
+router.get('/:fileID', checkFileValidity, handleDownload);
+router.delete('/:fileID', requirePassword, checkFileValidity, handleDelete);
 router.post('/clean', requirePassword, handleClean);
 
 export default {
@@ -18,6 +18,6 @@ export default {
 	},
 
 	async scheduled(event: Event, env: Env, ctx: ExecutionContext) {
-		ctx.waitUntil(cleanExpiredFiles(env));
+		ctx.waitUntil(cronCleanExpiredFiles(env));
 	}
 };

@@ -1,9 +1,9 @@
 import { Buffer } from 'node:buffer';
 import { Handler } from './index';
-import { timingSafeEqual } from './utils';
+import { currentTimestamp, timingSafeEqual } from './utils';
+import { clean } from './clean';
 
-
-export const requirePassword: Handler = ({ env, req }) => {
+export const requirePassword: Handler = async ({ env, req }) => {
 	if (!env.PASSWORD)
 		return;
 	const authorization = req.headers.get('Authorization');
@@ -26,4 +26,17 @@ export const requirePassword: Handler = ({ env, req }) => {
 			'WWW-Authenticate': 'Basic realm="Flare Bin", charset="UTF-8"'
 		}
 	});
+};
+
+export const checkFileValidity: Handler = async ({ env, req }) => {
+	const now = currentTimestamp();
+	const fileID = req.params.fileID;
+	const fileData = await env.KV_NAMESPACE.get<FileData>(fileID, { type: 'json' });
+	if (fileData && fileData.expireAt <= now) {
+		await clean(fileID, env.KV_NAMESPACE, env.BUCKET);
+		return new Response('File does not exist or has expired.', {
+			status: 404
+		});
+	}
+	return;
 };

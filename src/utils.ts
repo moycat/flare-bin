@@ -15,15 +15,7 @@ export function timingSafeEqual(a: string, b: string): boolean {
 	return crypto.subtle.timingSafeEqual(aBytes, bBytes);
 }
 
-export async function isIDUsable(id: string, kv_namespace: KVNamespace): Promise<boolean> {
-	if (id == 'files' || id === 'clean') {
-		// Reserved IDs.
-		return false;
-	}
-	const existing = await kv_namespace.get(id);
-	// TODO: delete if expired.
-	return !existing;
-}
+export const currentTimestamp = () => Math.floor(Date.now() / 1000);
 
 export const formatDigit = (x, digit: number = 2) => x.toLocaleString('en-US', {
 	minimumIntegerDigits: digit,
