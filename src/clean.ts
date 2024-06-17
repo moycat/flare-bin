@@ -6,16 +6,20 @@ export async function clean(id: string, kvNamespace: KVNamespace, bucket: R2Buck
 	if (!fileData) {
 		throw new Error('file id not found');
 	}
+
+	// Delete the file first.
 	const uuid = fileData['uuid'];
 	try {
 		await bucket.delete(uuid);
 	} catch (e) {
 		console.log('failed to delete object in bucket:', e);
 	}
+
+	// Then delete the metadata.
 	return kvNamespace.delete(id);
 }
 
-export async function cronCleanExpiredFiles(env: Env) {
+export const cronCleanExpiredFiles = async (env: Env) => {
 	console.log('Cleaning expired files...');
 	const now = (new Date()).getTime() / 1000;
 	let cursor = '';
@@ -23,6 +27,7 @@ export async function cronCleanExpiredFiles(env: Env) {
 		const keyList = await env.KV_NAMESPACE.list({
 			cursor: cursor
 		});
+		// Check every key if it's expired.
 		for (const key of keyList.keys) {
 			if (key.metadata.expireAt > 0 && now > key.metadata.expireAt) {
 				console.log(`[${key.name}] has expired at [${key.metadata.expireAt}]`);
@@ -39,7 +44,7 @@ export async function cronCleanExpiredFiles(env: Env) {
 		cursor = keyList.cursor;
 	}
 	return new Response('Expired files cleaned.');
-}
+};
 
 export const handleClean: Handler = async ({ env }): Promise<Response> => {
 	return cronCleanExpiredFiles(env);
