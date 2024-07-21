@@ -5,3 +5,10 @@ interface FileData {
 	filename: string;
 	contentType: string;
 }
+
+interface FileParameter {
+	id: string;
+	expireAt: number;
+	token: string;
+	filename: string | null;
+}
