@@ -14,24 +14,24 @@ Optional parameters:
 - token (query) / X-Token (header): Token required to download the file. None by default.
 - filename (query) / X-Filename (header): Filename shown when downloading. The raw filename by default.
 
-# Upload a file (>100MB)
+# Upload a file (>=100MB)
 
-curl -u ':<password>' -s 'https://${host}/sh' | sh -s - <filename> [options]
+curl -s -u ':<password>' 'https://${host}/sh' | sh -s - <filename> [options]
 
-# List files
-
-curl -u ':<password>' 'https://${host}/list'
-
-Optional parameters:
+Options:
 -h: Show help message.
 -i: Specify a file ID for the link. Random IDs by default.
 -f: Filename shown when downloading. The raw filename by default.
 -t: Expiration TTL in seconds; 0 means never expiring. 604800 (1 week) by default.
 -T: Token required to download the file. None by default.
 
+# List files
+
+curl -u ':<password>' 'https://${host}/list'
+
 # Delete a file
 
-curl -X DELETE ':<password>' 'https://${host}/<file_id>'
+curl -X DELETE -u ':<password>' 'https://${host}/<file_id>'
 `.trim();
 
 export const handleUsage = async ({ req }): Promise<Response> => {
