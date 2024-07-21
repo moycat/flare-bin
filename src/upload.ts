@@ -80,7 +80,7 @@ async function doFullUpload(id: string, fileData: FileData, file: Blob, env: Env
 	await env.BUCKET.put(fileData.uuid, file);
 
 	// Generate the message.
-	const msg = await generateMessage(host, id, fileData, file.size)
+	const msg = await generateMessage(host, id, fileData, file.size);
 	console.log(`File [${id}] stored as [${fileData.uuid}]`);
 	return new Response(msg);
 }
@@ -97,7 +97,6 @@ export const handlePutUpload: Handler = async ({ env, req }): Promise<Response> 
 		filename: params.filename || filename,
 		contentType: contentType
 	};
-
 	return doFullUpload(params.id, fileData, await req.blob(), env, req.headers.get('Host'));
 };
 
@@ -192,7 +191,7 @@ export const handleCompleteMultipartUpload = async ({ env, req }): Promise<Respo
 		token: req.headers.get('X-Token') || '',
 		filename: req.headers.get('X-Filename') || 'file',
 		contentType: req.headers.get('X-Content-Type') || 'application/octet-stream'
-	}
+	};
 	await env.KV_NAMESPACE.put(id, JSON.stringify(fileData), {
 		metadata: {
 			expireAt: fileData.expireAt,
@@ -203,6 +202,6 @@ export const handleCompleteMultipartUpload = async ({ env, req }): Promise<Respo
 	});
 
 	// Generate the message.
-	const msg = await generateMessage(req.headers.get("Host"), id, fileData, object.size)
+	const msg = await generateMessage(req.headers.get('Host'), id, fileData, object.size);
 	return new Response(msg);
 };

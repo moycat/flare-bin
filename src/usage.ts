@@ -40,6 +40,6 @@ export const handleUsage = async ({ req }): Promise<Response> => {
 
 export const handleSh = async ({ env, req }): Promise<Response> => {
 	const host = req.headers.get('Host');
-	const sh = uploadSh.replace("###HOST_PLACEHOLDER###", host).replace("###PASSWORD_PLACEHOLDER###", env.PASSWORD);
+	const sh = uploadSh.replace('###HOST_PLACEHOLDER###', host).replace('###PASSWORD_PLACEHOLDER###', env.PASSWORD);
 	return new Response(sh);
-}
+};
